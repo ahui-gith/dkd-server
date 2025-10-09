@@ -45,3 +45,12 @@ nbdist/
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
+
+###########################################
+# 配置密钥
+application-prod.yml
+application-dev.yml
+
+###########################################
+# 本地头像
+uploadPath/*

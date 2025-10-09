@@ -1,0 +1,114 @@
+# 生产环境 - 服务器配置（常用80/443端口，需符合服务器规范）
+server:
+  port: 80
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+    accept-count: 2000  # 生产环境调高排队数
+    threads:
+      max: 1000  # 生产环境调高最大线程数
+      min-spare: 200  # 生产环境调高初始线程数
+
+# 生产环境 - 日志配置（info级别，减少日志开销）
+logging:
+  level:
+    com.dkd: info  # 项目包日志级别设为info（避免debug日志冗余）
+
+# 生产环境 - Spring配置
+spring:
+  # 生产环境Redis（服务器Redis，需填真实地址和密码）
+  redis:
+    host: 192.168.1.100  # 生产Redis服务器IP
+    port: 6379
+    database: 1  # 生产环境用单独数据库（避免与其他服务冲突）
+    password: prod_redis_password  # 生产Redis密码（需加密，见注意事项）
+    timeout: 10s
+    lettuce:
+      pool:
+        min-idle: 5
+        max-idle: 20
+        max-active: 50  # 生产环境调高连接数
+        max-wait: 5000ms  # 生产环境设等待时间，避免无限阻塞
+  # 生产环境Druid数据源（生产库，安全配置）
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    druid:
+      # 主库（生产库，需填真实地址）
+      master:
+        url: jdbc:mysql://192.168.1.101:3306/dkd_prod?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&allowMultiQueries=true
+        username: prod_db_user  # 生产库账号（最小权限原则）
+        password: ENC(xxxxxx)  # 生产库密码（必须加密，见注意事项）
+      # 从库（生产环境可开启，实现读写分离）
+      slave:
+        enabled: true  # 生产环境开启从库
+        url: jdbc:mysql://192.168.1.102:3306/dkd_prod?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&allowMultiQueries=true
+        username: prod_db_slave_user
+        password: ENC(xxxxxx)  # 从库密码也需加密
+      # Druid连接池（生产环境调优）
+      initialSize: 10
+      minIdle: 20
+      maxActive: 100  # 生产环境调高连接池上限
+      maxWait: 60000
+      connectTimeout: 30000
+      socketTimeout: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      maxEvictableIdleTimeMillis: 900000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      # Druid监控（生产环境加固）
+      webStatFilter:
+        enabled: true
+      statViewServlet:
+        enabled: true
+        allow: 192.168.1.0/24  # 仅允许内网IP访问监控台（重要！）
+        deny: 0.0.0.0/0  # 拒绝外网IP
+        url-pattern: /druid/*
+        login-username: prod_druid_admin  # 生产监控账号（复杂密码）
+        login-password: ENC(xxxxxx)  # 生产监控密码（加密）
+      # Druid过滤器（生产环境开启防火墙）
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true
+          slow-sql-millis: 500  # 生产环境缩短慢SQL阈值，及时发现问题
+          merge-sql: true
+        wall:
+          enabled: true  # 开启SQL防火墙，防止注入
+          config:
+            multi-statement-allow: false  # 生产环境禁止多语句执行（防注入）
+
+  # 生产环境文件存储（阿里云OSS）
+  file-storage:
+    default-platform: aliyun-oss-1
+    # 生产环境禁用本地存储（关键！防止误操作）
+    local:
+      - platform: local-1
+        enable-storage: false  # 强制关闭本地存储
+
+    # 阿里云OSS（生产环境专用）
+    aliyun-oss:
+      - platform: aliyun-oss-1
+        enable-storage: true  # 生产环境启用OSS
+        access-key: ENC(xxx)  # 生产AK（必须加密，使用Jasypt）
+        secret-key: ENC(xxx)  # 生产SK（必须加密）
+        end-point: oss-cn-beijing.aliyuncs.com  # 生产OSS节点
+        bucket-name: prod-official-bucket  # 生产正式Bucket
+        domain: https://prod-official-bucket.oss-cn-beijing.aliyuncs.com/  # 生产域名
+        base-path: prod/  # 生产环境OSS目录
+
+# 生产环境 - 项目上传路径（Linux路径，需提前创建并授权）
+ruoyi:
+  profile: /home/dkd/uploadPath  # Linux服务器路径
+
+# 生产环境 - 关闭开发相关功能
+spring.devtools:
+  restart:
+    enabled: false  # 生产关闭热部署（减少资源开销）
+
+swagger:
+  enabled: false  # 生产关闭Swagger（避免接口暴露）
