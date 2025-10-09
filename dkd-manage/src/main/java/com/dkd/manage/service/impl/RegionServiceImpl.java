@@ -2,6 +2,7 @@ package com.dkd.manage.service.impl;
 
 import java.util.List;
 import com.dkd.common.utils.DateUtils;
+import com.dkd.manage.domain.vo.RegionVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.dkd.manage.mapper.RegionMapper;
@@ -42,6 +43,18 @@ public class RegionServiceImpl implements IRegionService
     public List<Region> selectRegionList(Region region)
     {
         return regionMapper.selectRegionList(region);
+    }
+
+    /**
+     * 查询区域管理列表
+     *
+     * @param region 区域管理
+     * @return 区域管理
+     */
+    @Override
+    public List<RegionVo> selectRegionVoList(Region region)
+    {
+        return regionMapper.selectRegionVoList(region);
     }
 
     /**
