@@ -146,6 +146,8 @@ public class GlobalExceptionHandler
         if (e.getMessage().contains("foreign")) {
 
             return AjaxResult.error("无法删除，有其他数据引用");
+        } else if (e.getMessage().contains("Duplicate")) {
+            return AjaxResult.error("无法保存，数据已存在");
         }
         return AjaxResult.error("您的操作违反了数据库中的完整性约束");
     }

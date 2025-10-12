@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.dkd.manage.mapper.VendingMachineMapper;
 import com.dkd.manage.domain.VendingMachine;
 import com.dkd.manage.service.IVendingMachineService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 设备管理Service业务层处理
@@ -63,7 +64,7 @@ public class VendingMachineServiceImpl implements IVendingMachineService {
      * @param vendingMachine 设备管理
      * @return 结果
      */
-    @Override
+    @Transactional
     public int insertVendingMachine(VendingMachine vendingMachine) {
         // 1 新增设备信息
         // 1-1 添加设备编号

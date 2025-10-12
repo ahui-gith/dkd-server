@@ -2,6 +2,7 @@ package com.dkd.manage.service;
 
 import java.util.List;
 import com.dkd.manage.domain.Sku;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 商品管理Service接口
@@ -58,4 +59,11 @@ public interface ISkuService
      * @return 结果
      */
     public int deleteSkuBySkuId(Long skuId);
+
+    /**
+     * 批量新增商品管理
+     * @param file
+     * @return 结果
+     */
+    public int insertSkus(MultipartFile file) throws Exception ;
 }
